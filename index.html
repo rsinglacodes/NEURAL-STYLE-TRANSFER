@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neural Style Transfer — Upload</title>
+  <style>
+    :root{
+      --bg:#0f1115; --card:#15171b; --accent:#ffb347; --muted:#cfcfcf;
+    }
+    body{font-family:Inter,system-ui,Arial; background:var(--bg); color:var(--muted); margin:0; padding:24px; display:flex; flex-direction:column; align-items:center;}
+    h1{color:var(--accent); margin:8px 0 18px;}
+    form{width:100%; max-width:980px; background:transparent; display:flex; gap:20px; flex-direction:column; align-items:center;}
+    .controls{background:var(--card); padding:18px; border-radius:12px; width:100%; box-sizing:border-box; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center;}
+    .button{background:#222426; padding:10px 14px; border-radius:8px; border:1px solid #2b2d2f; color:var(--muted); cursor:pointer;}
+    .button:hover{background:var(--accent); color:#111;}
+    .panel-row{display:flex; gap:20px; width:100%; justify-content:center; flex-wrap:wrap; margin-top:18px;}
+    .dropzone{
+      width:300px; min-height:220px; background:#0c0d0f; border-radius:12px; border:2px dashed #242628; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:12px; box-sizing:border-box; transition:all .18s ease; position:relative;
+    }
+    .dropzone.dragover{border-color:var(--accent); box-shadow:0 6px 24px rgba(255,179,71,0.06);}
+    .dropzone h3{margin:6px 0 8px; color:var(--accent); font-size:15px;}
+    .dropzone p{font-size:13px; color:#9aa0a6; margin:0 0 10px;}
+    .preview{width:100%; height:160px; background:#080809; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; border:1px solid #202124;}
+    .preview img{max-width:100%; max-height:100%; display:block;}
+    .small{font-size:12px; color:#8f9396; margin-top:8px;}
+    .img-block{background:var(--card); padding:12px; border-radius:10px; width:100%; max-width:980px; display:flex; gap:12px; justify-content:space-between; align-items:center; margin-top:18px;}
+    .submit-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+    @media (max-width:760px){
+      .panel-row{flex-direction:column; align-items:center;}
+      .dropzone{width:92%;}
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Neural Style Transfer</h1>
+
+  <form id="nst-form" action="/" method="POST" enctype="multipart/form-data">
+    <div class="controls">
+      <div class="submit-row">
+        <label class="button" id="open-content">Choose Content</label>
+        <label class="button" id="open-style">Choose Style</label>
+        <button type="submit" class="button" id="generate-btn">Generate Style</button>
+      </div>
+      <div style="width:100%; text-align:center; font-size:13px; color:#9aa0a6; margin-top:8px;">
+        You can <strong>browse</strong>, <strong>drag &amp; drop</strong> or <strong>paste</strong> an image into each box.
+        Paste uses your clipboard (Ctrl/Cmd+V) and will insert into the last-focused dropzone.
+      </div>
+    </div>
+
+    <!-- Hidden real file inputs the server expects -->
+    <input type="file" id="content-input" name="content_image" accept="image/*" style="display:none">
+    <input type="file" id="style-input" name="style_image" accept="image/*" style="display:none">
+
+    <div class="panel-row">
+      <!-- Content dropzone -->
+      <div class="dropzone" id="content-zone" tabindex="0" data-target="content">
+        <h3>Content Image</h3>
+        <p>Drop, paste, or click "Choose Content"</p>
+        <div class="preview" id="content-preview"><span style="color:#666;">No image</span></div>
+        <div class="small">Press Ctrl/Cmd+V to paste into the focused box.</div>
+      </div>
+
+      <!-- Style dropzone -->
+      <div class="dropzone" id="style-zone" tabindex="0" data-target="style">
+        <h3>Style Image</h3>
+        <p>Drop, paste, or click "Choose Style"</p>
+        <div class="preview" id="style-preview"><span style="color:#666;">No image</span></div>
+        <div class="small">Press Ctrl/Cmd+V to paste into the focused box.</div>
+      </div>
+    </div>
+
+    <!-- Optional existing result preview (flask will inject URLs when available) -->
+    {% if content_image or style_image or result_image %}
+    <div class="img-block">
+      {% if content_image %}
+      <div style="flex:1; text-align:center;">
+        <h4 style="color:var(--accent); margin:4px 0;">Content</h4>
+        <img src="{{ content_image }}" alt="Content" style="max-width:240px; border-radius:8px;">
+      </div>
+      {% endif %}
+      {% if style_image %}
+      <div style="flex:1; text-align:center;">
+        <h4 style="color:var(--accent); margin:4px 0;">Style</h4>
+        <img src="{{ style_image }}" alt="Style" style="max-width:240px; border-radius:8px;">
+      </div>
+      {% endif %}
+      {% if result_image %}
+      <div style="flex:1; text-align:center;">
+        <h4 style="color:var(--accent); margin:4px 0;">Generated</h4>
+        <img src="{{ result_image }}" alt="Generated" style="max-width:240px; border-radius:8px;">
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </form>
+
+  <script>
+    // Elements
+    const contentZone = document.getElementById('content-zone');
+    const styleZone = document.getElementById('style-zone');
+    const contentInput = document.getElementById('content-input');
+    const styleInput = document.getElementById('style-input');
+    const contentPreview = document.getElementById('content-preview');
+    const stylePreview = document.getElementById('style-preview');
+    const openContentBtn = document.getElementById('open-content');
+    const openStyleBtn = document.getElementById('open-style');
+
+    // Keep track of last focused dropzone for paste
+    let lastFocused = contentZone;
+
+    // Helpers
+    function preventDefault(e){ e.preventDefault(); e.stopPropagation(); }
+    function setPreview(previewEl, file) {
+      // Clear preview
+      previewEl.innerHTML = '';
+      if (!file) {
+        previewEl.innerHTML = '<span style="color:#666;">No image</span>';
+        return;
+      }
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.onload = () => URL.revokeObjectURL(img.src);
+      previewEl.appendChild(img);
+    }
+
+    function fileListToInput(file, inputEl) {
+      // Use DataTransfer to set input.files
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      inputEl.files = dt.files;
+    }
+
+    // When the "Choose ..." labels clicked -> open file picker for correct input
+    openContentBtn.addEventListener('click', () => contentInput.click());
+    openStyleBtn.addEventListener('click', () => styleInput.click());
+
+    // File inputs change -> preview + keep files
+    contentInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      setPreview(contentPreview, file);
+    });
+    styleInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      setPreview(stylePreview, file);
+    });
+
+    // Drag & drop handlers for a zone
+    function attachDropHandlers(zoneEl, inputEl, previewEl) {
+      // highlight on dragenter/over
+      zoneEl.addEventListener('dragenter', (e) => { preventDefault(e); zoneEl.classList.add('dragover'); });
+      zoneEl.addEventListener('dragover', (e) => { preventDefault(e); zoneEl.classList.add('dragover'); });
+      zoneEl.addEventListener('dragleave', (e) => { preventDefault(e); zoneEl.classList.remove('dragover'); });
+      zoneEl.addEventListener('drop', (e) => {
+        preventDefault(e);
+        zoneEl.classList.remove('dragover');
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0) {
+          const file = dt.files[0];
+          // Only accept images
+          if (file.type.startsWith('image/')) {
+            fileListToInput(file, inputEl);
+            setPreview(previewEl, file);
+          } else {
+            alert('Please drop an image file.');
+          }
+        }
+      });
+
+      // focus tracking for paste; allow keyboard focus
+      zoneEl.addEventListener('focus', () => { lastFocused = zoneEl; });
+      zoneEl.addEventListener('click', () => { lastFocused = zoneEl; });
+    }
+
+    attachDropHandlers(contentZone, contentInput, contentPreview);
+    attachDropHandlers(styleZone, styleInput, stylePreview);
+
+    // Paste handling (Ctrl/Cmd+V). If clipboard has image, put it into lastFocused zone.
+    window.addEventListener('paste', (e) => {
+      // Look for image items in clipboard
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile ? item.getAsFile() : item.getAsBlob();
+          if (!blob) continue;
+          // create a File with name
+          let file;
+          try {
+            file = new File([blob], 'pasted.png', { type: blob.type });
+          } catch (err) {
+            // older browsers may not support File constructor
+            file = blob;
+          }
+
+          // Determine which input to target
+          const target = lastFocused && lastFocused.dataset && lastFocused.dataset.target;
+          if (target === 'style') {
+            fileListToInput(file, styleInput);
+            setPreview(stylePreview, file);
+          } else {
+            // default to content
+            fileListToInput(file, contentInput);
+            setPreview(contentPreview, file);
+          }
+          e.preventDefault();
+          break; // use first image only
+        }
+      }
+    });
+
+    // Accessibility: allow keyboard dropzone selection and Enter to open picker
+    [contentZone, styleZone].forEach(zone => {
+      zone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const t = zone.dataset.target;
+          if (t === 'style') styleInput.click();
+          else contentInput.click();
+        }
+      });
+    });
+
+    // If user navigated here with prefilled Flask images, keep those previews shown
+    // (server injects content_image/style_image result in template; here we check imgs inside .img-block)
+    window.addEventListener('load', () => {
+      // If there is server-rendered content image, don't clobber it.
+      const serverContentImg = document.querySelector('.img-block img[alt="Content"]');
+      const serverStyleImg = document.querySelector('.img-block img[alt="Style"]');
+      if (serverContentImg) {
+        contentPreview.innerHTML = '';
+        const img = document.createElement('img'); img.src = serverContentImg.src; contentPreview.appendChild(img);
+      }
+      if (serverStyleImg) {
+        stylePreview.innerHTML = '';
+        const img2 = document.createElement('img'); img2.src = serverStyleImg.src; stylePreview.appendChild(img2);
+      }
+    });
+  </script>
+</body>
+</html>
