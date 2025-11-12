@@ -44,6 +44,8 @@ Save and visualize the final stylized image.
 
 #EXAMPLE
 
-Content Image	:-
-Style Image	:-
+Content Image	:-<img width="800" height="601" alt="Image" src="https://github.com/user-attachments/assets/8b207b15-4d02-4e18-abed-3cf233f7c221" />
+
+Style Image	:-<img width="1160" height="934" alt="Image" src="https://github.com/user-attachments/assets/412bddfe-f177-4a6d-8269-4aacf3add344" />
+
 Output Image :- 
