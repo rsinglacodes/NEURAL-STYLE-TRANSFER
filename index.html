@@ -3,96 +3,414 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Neural Style Transfer — Upload</title>
+  <title>Neural Style Transfer – Upload</title>
   <style>
     :root{
-      --bg:#0f1115; --card:#15171b; --accent:#ffb347; --muted:#cfcfcf;
+      --bg:#0a0c10; 
+      --card:#13151a; 
+      --card-hover:#1a1d24;
+      --accent:#ff6b35; 
+      --accent-hover:#ff8555;
+      --muted:#e0e0e0;
+      --text-secondary:#9ca3af;
+      --border:#252830;
     }
-    body{font-family:Inter,system-ui,Arial; background:var(--bg); color:var(--muted); margin:0; padding:24px; display:flex; flex-direction:column; align-items:center;}
-    h1{color:var(--accent); margin:8px 0 18px;}
-    form{width:100%; max-width:980px; background:transparent; display:flex; gap:20px; flex-direction:column; align-items:center;}
-    .controls{background:var(--card); padding:18px; border-radius:12px; width:100%; box-sizing:border-box; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center;}
-    .button{background:#222426; padding:10px 14px; border-radius:8px; border:1px solid #2b2d2f; color:var(--muted); cursor:pointer;}
-    .button:hover{background:var(--accent); color:#111;}
-    .panel-row{display:flex; gap:20px; width:100%; justify-content:center; flex-wrap:wrap; margin-top:18px;}
+    
+    * { box-sizing: border-box; }
+    
+    body{
+      font-family: 'Segoe UI', Inter, system-ui, Arial; 
+      background: linear-gradient(135deg, var(--bg) 0%, #0f1419 100%); 
+      color: var(--muted); 
+      margin:0; 
+      padding:40px 24px; 
+      min-height: 100vh;
+      display:flex; 
+      flex-direction:column; 
+      align-items:center;
+    }
+    
+    h1{
+      color: var(--accent); 
+      margin:0 0 12px;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      text-align: center;
+    }
+    
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    
+    form{
+      width:100%; 
+      max-width:1100px; 
+      display:flex; 
+      gap:32px; 
+      flex-direction:column; 
+      align-items:center;
+    }
+    
+    .controls{
+      background: var(--card); 
+      padding: 28px; 
+      border-radius: 20px; 
+      width:100%; 
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .button{
+      background: linear-gradient(135deg, #1e2128 0%, #2a2d36 100%);
+      padding: 14px 28px; 
+      border-radius: 12px; 
+      border: 1px solid var(--border); 
+      color: var(--muted); 
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .button:hover{
+      background: var(--accent); 
+      color: #fff;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(255,107,53,0.3);
+    }
+    
+    .button-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #ff8555 100%);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    
+    .button-primary:hover {
+      background: linear-gradient(135deg, #ff8555 0%, #ffa075 100%);
+      transform: translateY(-2px) scale(1.02);
+    }
+    
+    .help-text {
+      text-align: center; 
+      font-size: 14px; 
+      color: var(--text-secondary); 
+      line-height: 1.6;
+    }
+    
+    .help-text strong {
+      color: var(--accent);
+    }
+    
+    .panel-row{
+      display: flex; 
+      gap: 20px; 
+      width: 100%; 
+      justify-content: center; 
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .operator-icon {
+      font-size: 48px;
+      color: var(--accent);
+      font-weight: bold;
+      margin: 0 8px;
+      opacity: 0.9;
+    }
+    
     .dropzone{
-      width:300px; min-height:220px; background:#0c0d0f; border-radius:12px; border:2px dashed #242628; display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding:12px; box-sizing:border-box; transition:all .18s ease; position:relative;
+      flex: 0 0 auto;
+      width: 340px;
+      height: 450px;
+      background: var(--card);
+      border-radius: 20px; 
+      border: 2px dashed var(--border); 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      padding: 0;
+      transition: all 0.3s ease; 
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      overflow: hidden;
     }
-    .dropzone.dragover{border-color:var(--accent); box-shadow:0 6px 24px rgba(255,179,71,0.06);}
-    .dropzone h3{margin:6px 0 8px; color:var(--accent); font-size:15px;}
-    .dropzone p{font-size:13px; color:#9aa0a6; margin:0 0 10px;}
-    .preview{width:100%; height:160px; background:#080809; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; border:1px solid #202124;}
-    .preview img{max-width:100%; max-height:100%; display:block;}
-    .small{font-size:12px; color:#8f9396; margin-top:8px;}
-    .img-block{background:var(--card); padding:12px; border-radius:10px; width:100%; max-width:980px; display:flex; gap:12px; justify-content:space-between; align-items:center; margin-top:18px;}
-    .submit-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
-    @media (max-width:760px){
-      .panel-row{flex-direction:column; align-items:center;}
-      .dropzone{width:92%;}
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      height: 100%;
+    }
+    
+    .dropzone-icon-small {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.7;
+    }
+    
+    .dropzone h3 {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .dropzone p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    .full-preview {
+      width: 100%;
+      height: 100%;
+      background: #080a0e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    
+    .full-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .image-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.85);
+      color: var(--accent);
+      padding: 10px;
+      font-size: 23px;
+      font-weight: 800;
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+    
+    .label-icon {
+      font-size:  34px;
+      margin-right: 2px;
+    }
+    
+    .dropzone:hover {
+      border-color: var(--accent);
+      background: var(--card-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(255,107,53,0.15);
+    }
+    
+    .result-zone {
+      cursor: default;
+      border-color: #2a4d2a;
+    }
+    
+    .result-zone:hover {
+      border-color: #2a4d2a;
+      transform: none;
+      background: var(--card);
+    }
+    
+    .dropzone.dragover{
+      border-color: var(--accent); 
+      background: var(--card-hover);
+      box-shadow: 0 12px 48px rgba(255,107,53,0.25);
+      transform: scale(1.02);
+    }
+    
+    .dropzone-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+    
+    .dropzone h3{
+      margin: 0 0 12px; 
+      color: var(--accent); 
+      font-size: 22px;
+      font-weight: 700;
+    }
+    
+    .dropzone p{
+      font-size: 15px; 
+      color: var(--text-secondary); 
+      margin: 0 0 24px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    
+    .preview{
+      width: 100%; 
+      height: 220px; 
+      background: #080a0e;
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      overflow: hidden; 
+      border-radius: 12px; 
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    
+    .preview img{
+      max-width: 100%; 
+      max-height: 100%; 
+      display: block;
+      object-fit: contain;
+    }
+    
+    .preview-placeholder {
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-align: center;
+    }
+    
+    .small{
+      font-size: 13px; 
+      color: var(--text-secondary); 
+      margin-top: 16px;
+      text-align: center;
+      line-height: 1.4;
+    }
+    
+    @media (max-width:900px){
+      .panel-row{
+        flex-direction: column; 
+        align-items: center;
+      }
+      .dropzone{
+        width: 100%;
+        max-width: 400px;
+      }
+      .operator-icon {
+        transform: rotate(90deg);
+        margin: 8px 0;
+      }
+      h1 {
+        font-size: 32px;
+      }
+    }
+    
+    @media (max-width:600px){
+      body {
+        padding: 24px 16px;
+      }
+      .controls {
+        padding: 20px;
+      }
+      .button {
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+      .dropzone {
+        padding: 24px;
+        min-height: 380px;
+      }
     }
   </style>
 </head>
 <body>
   <h1>🎨 Neural Style Transfer</h1>
+  <div class="subtitle">Transform your images with artistic styles using AI</div>
 
   <form id="nst-form" action="/" method="POST" enctype="multipart/form-data">
     <div class="controls">
-      <div class="submit-row">
-        <label class="button" id="open-content">Choose Content</label>
-        <label class="button" id="open-style">Choose Style</label>
-        <button type="submit" class="button" id="generate-btn">Generate Style</button>
+      <div class="button-group">
+        <button type="submit" class="button button-primary" id="generate-btn">✨ Generate Style Transfer</button>
+        <button type="button" class="button" id="new-image-btn">🔄 New Image</button>
       </div>
-      <div style="width:100%; text-align:center; font-size:13px; color:#9aa0a6; margin-top:8px;">
-        You can <strong>browse</strong>, <strong>drag &amp; drop</strong> or <strong>paste</strong> an image into each box.
-        Paste uses your clipboard (Ctrl/Cmd+V) and will insert into the last-focused dropzone.
+      <div class="help-text">
+        Upload or <strong>drag & drop</strong> images below, or use <strong>Ctrl/Cmd+V</strong> to paste from clipboard
       </div>
     </div>
 
-    <!-- Hidden real file inputs the server expects -->
+    <!-- Hidden file inputs -->
     <input type="file" id="content-input" name="content_image" accept="image/*" style="display:none">
     <input type="file" id="style-input" name="style_image" accept="image/*" style="display:none">
 
     <div class="panel-row">
       <!-- Content dropzone -->
       <div class="dropzone" id="content-zone" tabindex="0" data-target="content">
-        <h3>Content Image</h3>
-        <p>Drop, paste, or click "Choose Content"</p>
-        <div class="preview" id="content-preview"><span style="color:#666;">No image</span></div>
-        <div class="small">Press Ctrl/Cmd+V to paste into the focused box.</div>
+        <div class="empty-state" id="content-empty">
+          <div class="dropzone-icon-small">📷</div>
+          <h3>Content Image</h3>
+          <p>Click to browse, drag & drop, or paste</p>
+        </div>
+        <div class="preview full-preview" id="content-preview" style="display:none;"></div>
+        <div class="image-label" id="content-label" style="display:none;">
+          <span class="label-icon">📷</span> Content Image
+        </div>
       </div>
+
+      <!-- Plus icon -->
+      <div class="operator-icon">+</div>
 
       <!-- Style dropzone -->
       <div class="dropzone" id="style-zone" tabindex="0" data-target="style">
-        <h3>Style Image</h3>
-        <p>Drop, paste, or click "Choose Style"</p>
-        <div class="preview" id="style-preview"><span style="color:#666;">No image</span></div>
-        <div class="small">Press Ctrl/Cmd+V to paste into the focused box.</div>
+        <div class="empty-state" id="style-empty">
+          <div class="dropzone-icon-small">🎨</div>
+          <h3>Style Image</h3>
+          <p>Click to browse, drag & drop, or paste</p>
+        </div>
+        <div class="preview full-preview" id="style-preview" style="display:none;"></div>
+        <div class="image-label" id="style-label" style="display:none;">
+          <span class="label-icon">🎨</span> Style Image
+        </div>
+      </div>
+
+      <!-- Equals icon -->
+      <div class="operator-icon">=</div>
+
+      <!-- Result preview -->
+      <div class="dropzone result-zone" id="result-zone">
+        <div class="empty-state" id="result-empty">
+          <div class="dropzone-icon-small">✨</div>
+          <h3>Neural Style Transfer</h3>
+          <p>Your generated image will appear here</p>
+        </div>
+        <div class="preview full-preview" id="result-preview" style="display:none;"></div>
+        <div class="image-label" id="result-label" style="display:none;">
+          <span class="label-icon">✨</span> Neural Style Transfer
+        </div>
       </div>
     </div>
 
-    <!-- Optional existing result preview (flask will inject URLs when available) -->
-    {% if content_image or style_image or result_image %}
-    <div class="img-block">
-      {% if content_image %}
-      <div style="flex:1; text-align:center;">
-        <h4 style="color:var(--accent); margin:4px 0;">Content</h4>
-        <img src="{{ content_image }}" alt="Content" style="max-width:240px; border-radius:8px;">
-      </div>
-      {% endif %}
-      {% if style_image %}
-      <div style="flex:1; text-align:center;">
-        <h4 style="color:var(--accent); margin:4px 0;">Style</h4>
-        <img src="{{ style_image }}" alt="Style" style="max-width:240px; border-radius:8px;">
-      </div>
-      {% endif %}
-      {% if result_image %}
-      <div style="flex:1; text-align:center;">
-        <h4 style="color:var(--accent); margin:4px 0;">Generated</h4>
-        <img src="{{ result_image }}" alt="Generated" style="max-width:240px; border-radius:8px;">
-      </div>
-      {% endif %}
-    </div>
+    <!-- Result image from server (hidden, used to populate result preview) -->
+     {% if content_image %}
+    <img id="server-content" src="{{ content_image }}" alt="Content" style="display:none;">
+    {% endif %}
+    {% if style_image %}
+    <img id="server-style" src="{{ style_image }}" alt="Style" style="display:none;">
+    {% endif %}
+    {% if result_image %}
+    <img id="server-result" src="{{ result_image }}" alt="Generated" style="display:none;">
     {% endif %}
   </form>
 
@@ -104,114 +422,148 @@
     const styleInput = document.getElementById('style-input');
     const contentPreview = document.getElementById('content-preview');
     const stylePreview = document.getElementById('style-preview');
-    const openContentBtn = document.getElementById('open-content');
-    const openStyleBtn = document.getElementById('open-style');
+    const contentEmpty = document.getElementById('content-empty');
+    const styleEmpty = document.getElementById('style-empty');
+    const contentLabel = document.getElementById('content-label');
+    const styleLabel = document.getElementById('style-label');
+    const resultPreview = document.getElementById('result-preview');
+    const resultEmpty = document.getElementById('result-empty');
+    const resultLabel = document.getElementById('result-label');
+    const newImageBtn = document.getElementById('new-image-btn');
 
-    // Keep track of last focused dropzone for paste
     let lastFocused = contentZone;
 
-    // Helpers
     function preventDefault(e){ e.preventDefault(); e.stopPropagation(); }
-    function setPreview(previewEl, file) {
-      // Clear preview
-      previewEl.innerHTML = '';
+    
+    function setPreview(previewEl, emptyEl, labelEl, file) {
       if (!file) {
-        previewEl.innerHTML = '<span style="color:#666;">No image</span>';
+        previewEl.style.display = 'none';
+        previewEl.innerHTML = '';
+        emptyEl.style.display = 'flex';
+        labelEl.style.display = 'none';
         return;
       }
+      
+      emptyEl.style.display = 'none';
+      previewEl.style.display = 'flex';
+      labelEl.style.display = 'block';
+      
       const img = document.createElement('img');
       img.src = URL.createObjectURL(file);
       img.onload = () => URL.revokeObjectURL(img.src);
+      previewEl.innerHTML = '';
       previewEl.appendChild(img);
     }
 
     function fileListToInput(file, inputEl) {
-      // Use DataTransfer to set input.files
       const dt = new DataTransfer();
       dt.items.add(file);
       inputEl.files = dt.files;
     }
+    
+    // New Image button - clear everything
+    newImageBtn.addEventListener('click', () => {
+      // Clear file inputs
+      contentInput.value = '';
+      styleInput.value = '';
+      
+      // Reset previews
+      setPreview(contentPreview, contentEmpty, contentLabel, null);
+      setPreview(stylePreview, styleEmpty, styleLabel, null);
+      
+      // Clear result
+      resultPreview.style.display = 'none';
+      resultPreview.innerHTML = '';
+      resultEmpty.style.display = 'flex';
+      resultLabel.style.display = 'none';
+    });
 
-    // When the "Choose ..." labels clicked -> open file picker for correct input
-    openContentBtn.addEventListener('click', () => contentInput.click());
-    openStyleBtn.addEventListener('click', () => styleInput.click());
+    // Click to open file picker
+    contentZone.addEventListener('click', () => contentInput.click());
+    styleZone.addEventListener('click', () => styleInput.click());
 
-    // File inputs change -> preview + keep files
+    // File input changes
     contentInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      setPreview(contentPreview, file);
+      setPreview(contentPreview, contentEmpty, contentLabel, file);
     });
+    
     styleInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      setPreview(stylePreview, file);
+      setPreview(stylePreview, styleEmpty, styleLabel, file);
     });
 
-    // Drag & drop handlers for a zone
-    function attachDropHandlers(zoneEl, inputEl, previewEl) {
-      // highlight on dragenter/over
-      zoneEl.addEventListener('dragenter', (e) => { preventDefault(e); zoneEl.classList.add('dragover'); });
-      zoneEl.addEventListener('dragover', (e) => { preventDefault(e); zoneEl.classList.add('dragover'); });
-      zoneEl.addEventListener('dragleave', (e) => { preventDefault(e); zoneEl.classList.remove('dragover'); });
+    // Drag & drop handlers
+    function attachDropHandlers(zoneEl, inputEl, previewEl, emptyEl, labelEl) {
+      zoneEl.addEventListener('dragenter', (e) => { 
+        preventDefault(e); 
+        zoneEl.classList.add('dragover'); 
+      });
+      
+      zoneEl.addEventListener('dragover', (e) => { 
+        preventDefault(e); 
+        zoneEl.classList.add('dragover'); 
+      });
+      
+      zoneEl.addEventListener('dragleave', (e) => { 
+        preventDefault(e); 
+        zoneEl.classList.remove('dragover'); 
+      });
+      
       zoneEl.addEventListener('drop', (e) => {
         preventDefault(e);
         zoneEl.classList.remove('dragover');
         const dt = e.dataTransfer;
         if (dt && dt.files && dt.files.length > 0) {
           const file = dt.files[0];
-          // Only accept images
           if (file.type.startsWith('image/')) {
             fileListToInput(file, inputEl);
-            setPreview(previewEl, file);
+            setPreview(previewEl, emptyEl, labelEl, file);
           } else {
             alert('Please drop an image file.');
           }
         }
       });
 
-      // focus tracking for paste; allow keyboard focus
       zoneEl.addEventListener('focus', () => { lastFocused = zoneEl; });
-      zoneEl.addEventListener('click', () => { lastFocused = zoneEl; });
     }
 
-    attachDropHandlers(contentZone, contentInput, contentPreview);
-    attachDropHandlers(styleZone, styleInput, stylePreview);
+    attachDropHandlers(contentZone, contentInput, contentPreview, contentEmpty, contentLabel);
+    attachDropHandlers(styleZone, styleInput, stylePreview, styleEmpty, styleLabel);
 
-    // Paste handling (Ctrl/Cmd+V). If clipboard has image, put it into lastFocused zone.
+    // Paste handling
     window.addEventListener('paste', (e) => {
-      // Look for image items in clipboard
       const items = (e.clipboardData || e.originalEvent.clipboardData).items;
       if (!items) return;
+      
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.type.indexOf('image') !== -1) {
           const blob = item.getAsFile ? item.getAsFile() : item.getAsBlob();
           if (!blob) continue;
-          // create a File with name
+          
           let file;
           try {
             file = new File([blob], 'pasted.png', { type: blob.type });
           } catch (err) {
-            // older browsers may not support File constructor
             file = blob;
           }
 
-          // Determine which input to target
           const target = lastFocused && lastFocused.dataset && lastFocused.dataset.target;
           if (target === 'style') {
             fileListToInput(file, styleInput);
-            setPreview(stylePreview, file);
+            setPreview(stylePreview, styleEmpty, styleLabel, file);
           } else {
-            // default to content
             fileListToInput(file, contentInput);
-            setPreview(contentPreview, file);
+            setPreview(contentPreview, contentEmpty, contentLabel, file);
           }
           e.preventDefault();
-          break; // use first image only
+          break;
         }
       }
     });
 
-    // Accessibility: allow keyboard dropzone selection and Enter to open picker
+    // Keyboard accessibility
     [contentZone, styleZone].forEach(zone => {
       zone.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -223,19 +575,37 @@
       });
     });
 
-    // If user navigated here with prefilled Flask images, keep those previews shown
-    // (server injects content_image/style_image result in template; here we check imgs inside .img-block)
+    // Load server-rendered images
     window.addEventListener('load', () => {
-      // If there is server-rendered content image, don't clobber it.
-      const serverContentImg = document.querySelector('.img-block img[alt="Content"]');
-      const serverStyleImg = document.querySelector('.img-block img[alt="Style"]');
+      const serverContentImg = document.getElementById('server-content');
+      const serverStyleImg = document.getElementById('server-style');
+      const serverResultImg = document.getElementById('server-result');
+
       if (serverContentImg) {
-        contentPreview.innerHTML = '';
-        const img = document.createElement('img'); img.src = serverContentImg.src; contentPreview.appendChild(img);
+        contentEmpty.style.display = 'none';
+        contentPreview.style.display = 'flex';
+        contentLabel.style.display = 'block';
+        const img = document.createElement('img'); 
+        img.src = serverContentImg.src; 
+        contentPreview.appendChild(img);
       }
+      
       if (serverStyleImg) {
-        stylePreview.innerHTML = '';
-        const img2 = document.createElement('img'); img2.src = serverStyleImg.src; stylePreview.appendChild(img2);
+        styleEmpty.style.display = 'none';
+        stylePreview.style.display = 'flex';
+        styleLabel.style.display = 'block';
+        const img2 = document.createElement('img'); 
+        img2.src = serverStyleImg.src; 
+        stylePreview.appendChild(img2);
+      }
+      
+      if (serverResultImg) {
+        resultEmpty.style.display = 'none';
+        resultPreview.style.display = 'flex';
+        resultLabel.style.display = 'block';
+        const img3 = document.createElement('img'); 
+        img3.src = serverResultImg.src; 
+        resultPreview.appendChild(img3);
       }
     });
   </script>
