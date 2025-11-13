@@ -46,7 +46,7 @@ Save and visualize the final stylized image.
 
 Content Image	:-<img width="500" height="301" alt="Image" src="https://github.com/user-attachments/assets/8b207b15-4d02-4e18-abed-3cf233f7c221" />
 
-Style Image	:-<img width="660" height="434" alt="Image" src="https://github.com/user-attachments/assets/412bddfe-f177-4a6d-8269-4aacf3add344" />
+Style Image	:-<img width="460" height="234" alt="Image" src="https://github.com/user-attachments/assets/412bddfe-f177-4a6d-8269-4aacf3add344" />
 
 Output Image :- ![Image](https://github.com/user-attachments/assets/e14dad95-13a2-49ac-b276-23a7cdc44fda)
 
